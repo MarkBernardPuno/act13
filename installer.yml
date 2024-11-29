@@ -1,6 +1,6 @@
 ---
 - name: OpenStack Installation Playbook
-  hosts: servers
+  hosts: all
   become: true
   tasks:
 
