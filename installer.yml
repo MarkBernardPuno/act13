@@ -1,50 +1,52 @@
 ---
-- name: OpenStack Installation Playbook
-  hosts: servers
-  become: true
+- name: Install NTP and OpenStack Components
+  hosts: all
+  become: yes
   tasks:
+    - name: Install NTP
+      apt:
+        name: chrony
+        state: present
+      when: ansible_os_family == "Debian"
 
-  - name: Update apt cache
-    apt:
-      update_cache: yes
+    - name: Install OpenStack packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - python3-openstackclient
+        - nova-compute
+        - neutron-server
+        - glance
+        - keystone
+      when: ansible_os_family == "Debian"
 
-  - name: Install SQL Database (example for MySQL)
-    apt:
-      name: "{{ item }}"
-      state: present
-    loop:
-      - mariadb-server
-      - python3-pymysql
+    - name: Install SQL Database
+      apt:
+        name: mysql-server
+        state: present
+      when: ansible_os_family == "Debian"
 
-  - name: Start and enable MariaDB service
-    systemd:
-      name: mariadb
-      state: started
-      enabled: true
+    - name: Install Message Queue
+      apt:
+        name: rabbitmq-server
+        state: present
+      when: ansible_os_family == "Debian"
 
-  - name: Install Message Queue (example for RabbitMQ)
-    apt:
-      name: "{{ item }}"
-      state: present
-    loop:
-      - rabbitmq-server
+    - name: Install Memcached
+      apt:
+        name: memcached
+        state: present
+      when: ansible_os_family == "Debian"
 
-  - name: Start and enable RabbitMQ service
-    systemd:
-      name: rabbitmq-server
-      state: started
-      enabled: true
+    - name: Install Etcd
+      apt:
+        name: etcd
+        state: present
+      when: ansible_os_family == "Debian"
 
-  - name: Ensure MariaDB is running
-    command: mysqladmin ping
-    register: mysql_status
-    retries: 5
-    delay: 5
-    until: mysql_status.rc == 0
-
-  - name: Ensure RabbitMQ is running
-    command: rabbitmqctl status
-    register: rabbitmq_status
-    retries: 5
-    delay: 5
-    until: rabbitmq_status.rc == 0
+  handlers:
+    - name: restart chronyd
+      service:
+        name: chronyd
+        state: restarted
