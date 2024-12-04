@@ -1,3 +1,4 @@
+
 ---
 - name: Compute
   hosts: all
@@ -26,3 +27,4 @@
         name: rabbitmq-server
         state: present
       when: ansible_os_family == "Debian"
+

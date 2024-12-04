@@ -1,3 +1,4 @@
+
 ---
 - name: Install NTP and OpenStack Components
   hosts: all
